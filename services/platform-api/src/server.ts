@@ -3,8 +3,9 @@ import cors from "@fastify/cors";
 import { z } from "zod";
 import { PatchPrimitiveSchema, PrimitiveCatalog, PrimitiveSchema, RelationshipSchema } from "./domain.js";
 import { PrimitiveRepository } from "./repository.js";
+import { SurrealHttpClient, SurrealPrimitiveRepository, surrealConfigFromEnv, type PlatformRepository } from "./surreal.js";
 
-export function buildServer(repository = new PrimitiveRepository()) {
+export function buildServer(repository: PlatformRepository = new PrimitiveRepository()) {
   const app = Fastify({ logger: true });
   app.register(cors, { origin: true });
 
@@ -29,7 +30,7 @@ export function buildServer(repository = new PrimitiveRepository()) {
       offset: z.coerce.number().int().nonnegative().optional()
     });
     const query = QuerySchema.parse(request.query);
-    const result = repository.list(query);
+    const result = await repository.list(query);
     return {
       data: result.items,
       meta: { request_id: request.id, version: "v1", total: result.total, limit: result.limit, offset: result.offset }
@@ -39,7 +40,7 @@ export function buildServer(repository = new PrimitiveRepository()) {
   app.post("/api/v1/primitives", async (request, reply) => {
     const input = PrimitiveSchema.parse(request.body);
     try {
-      const created = repository.create(input);
+      const created = await repository.create(input);
       return reply.status(201).send({ data: created, meta: { request_id: request.id, version: "v1" } });
     } catch (error) {
       return reply.status(409).send({ error: { code: "primitive.conflict", message: error instanceof Error ? error.message : "Primitive conflict" }, meta: { request_id: request.id } });
@@ -49,7 +50,7 @@ export function buildServer(repository = new PrimitiveRepository()) {
   app.get("/api/v1/primitives/:identifier", async (request, reply) => {
     const Params = z.object({ identifier: z.string().min(1) });
     const { identifier } = Params.parse(request.params);
-    const item = repository.get(identifier);
+    const item = await repository.get(identifier);
     if (!item) return reply.status(404).send({ error: { code: "primitive.not_found", message: `Primitive not found: ${identifier}` }, meta: { request_id: request.id } });
     return { data: item, meta: { request_id: request.id, version: "v1" } };
   });
@@ -59,7 +60,7 @@ export function buildServer(repository = new PrimitiveRepository()) {
     const { identifier } = Params.parse(request.params);
     const patch = PatchPrimitiveSchema.parse(request.body);
     try {
-      const updated = repository.patch(identifier, patch);
+      const updated = await repository.patch(identifier, patch);
       return { data: updated, meta: { request_id: request.id, version: "v1" } };
     } catch (error) {
       return reply.status(404).send({ error: { code: "primitive.not_found", message: error instanceof Error ? error.message : "Primitive not found" }, meta: { request_id: request.id } });
@@ -69,7 +70,7 @@ export function buildServer(repository = new PrimitiveRepository()) {
   app.post("/api/v1/relationships", async (request, reply) => {
     const input = RelationshipSchema.parse(request.body);
     try {
-      const relationship = repository.relate(input);
+      const relationship = await repository.relate(input);
       return reply.status(201).send({ data: relationship, meta: { request_id: request.id, version: "v1" } });
     } catch (error) {
       return reply.status(400).send({ error: { code: "relationship.invalid", message: error instanceof Error ? error.message : "Invalid relationship" }, meta: { request_id: request.id } });
@@ -79,7 +80,7 @@ export function buildServer(repository = new PrimitiveRepository()) {
   app.get("/api/v1/relationships", async (request) => {
     const Query = z.object({ primitive: z.string().optional() });
     const query = Query.parse(request.query);
-    const items = repository.listRelationships(query.primitive);
+    const items = await repository.listRelationships(query.primitive);
     return { data: items, meta: { request_id: request.id, version: "v1", total: items.length } };
   });
 
@@ -94,10 +95,16 @@ export function buildServer(repository = new PrimitiveRepository()) {
   return app;
 }
 
+function repositoryFromEnv(): PlatformRepository {
+  const config = surrealConfigFromEnv();
+  if (!config) return new PrimitiveRepository();
+  return new SurrealPrimitiveRepository(new SurrealHttpClient(config));
+}
+
 if (import.meta.url === `file://${process.argv[1]}`) {
   const port = Number(process.env.PORT ?? 4000);
   const host = process.env.HOST ?? "0.0.0.0";
-  buildServer().listen({ port, host }).catch((error) => {
+  buildServer(repositoryFromEnv()).listen({ port, host }).catch((error) => {
     console.error(error);
     process.exit(1);
   });
