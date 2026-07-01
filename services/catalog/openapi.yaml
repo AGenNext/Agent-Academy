@@ -1,0 +1,367 @@
+openapi: 3.1.0
+info:
+  title: Agent Academy Catalog Service
+  version: 0.1.0
+  description: Schema.org-aligned Course Catalog API for Agent Academy.
+servers:
+  - url: http://localhost:4001
+paths:
+  /health:
+    get:
+      summary: Health check
+      responses:
+        '200':
+          description: Service is healthy
+  /api/v1/courses:
+    get:
+      summary: List courses
+      description: Returns schema.org Course resources from the Agent Academy catalog.
+      parameters:
+        - name: q
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [draft, active, archived, deprecated]
+        - name: educationalLevel
+          in: query
+          schema:
+            type: string
+        - name: provider
+          in: query
+          schema:
+            type: string
+        - name: tag
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+      responses:
+        '200':
+          description: Course list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseListResponse'
+    post:
+      summary: Create course
+      description: Creates a new schema.org-aligned Course resource.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Course'
+      responses:
+        '201':
+          description: Course created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseResponse'
+        '400':
+          description: Validation error
+        '409':
+          description: Identifier already exists
+  /api/v1/courses/{identifier}:
+    get:
+      summary: Get course
+      description: Retrieves a course by identifier or Agent Academy slug.
+      parameters:
+        - name: identifier
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Course found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseResponse'
+        '404':
+          description: Course not found
+    patch:
+      summary: Patch course
+      description: Updates a mutable subset of the course resource.
+      parameters:
+        - name: identifier
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Course updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseResponse'
+        '400':
+          description: Validation error
+        '404':
+          description: Course not found
+components:
+  schemas:
+    CourseListResponse:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Course'
+        meta:
+          $ref: '#/components/schemas/ListMeta'
+    CourseResponse:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          $ref: '#/components/schemas/Course'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+    ResponseMeta:
+      type: object
+      properties:
+        request_id:
+          type: string
+        version:
+          type: string
+    ListMeta:
+      allOf:
+        - $ref: '#/components/schemas/ResponseMeta'
+        - type: object
+          properties:
+            total:
+              type: integer
+            limit:
+              type: integer
+            offset:
+              type: integer
+    Organization:
+      type: object
+      required: ['@type', name]
+      properties:
+        '@type':
+          const: Organization
+        '@id':
+          type: string
+        name:
+          type: string
+        url:
+          type: string
+          format: uri
+    DefinedTerm:
+      type: object
+      required: ['@type', name]
+      properties:
+        '@type':
+          const: DefinedTerm
+        '@id':
+          type: string
+        name:
+          type: string
+        termCode:
+          type: string
+        inDefinedTermSet:
+          type: string
+        url:
+          type: string
+          format: uri
+    Syllabus:
+      type: object
+      required: ['@type', name]
+      properties:
+        '@type':
+          const: Syllabus
+        '@id':
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        position:
+          type: integer
+        timeRequired:
+          type: string
+        teaches:
+          type: array
+          items:
+            oneOf:
+              - type: string
+              - $ref: '#/components/schemas/DefinedTerm'
+        assesses:
+          type: array
+          items:
+            oneOf:
+              - type: string
+              - $ref: '#/components/schemas/DefinedTerm'
+    CourseInstance:
+      type: object
+      required: ['@type']
+      properties:
+        '@type':
+          const: CourseInstance
+        '@id':
+          type: string
+        name:
+          type: string
+        courseMode:
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                type: string
+        startDate:
+          type: string
+        endDate:
+          type: string
+    Course:
+      type: object
+      required:
+        - '@context'
+        - '@type'
+        - '@id'
+        - identifier
+        - name
+        - description
+        - courseCode
+        - provider
+        - educationalLevel
+        - learningResourceType
+        - teaches
+        - agennext
+      properties:
+        '@context':
+          const: https://schema.org
+        '@type':
+          const: Course
+        '@id':
+          type: string
+        identifier:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        alternateName:
+          type: string
+        courseCode:
+          type: string
+        url:
+          type: string
+          format: uri
+        provider:
+          $ref: '#/components/schemas/Organization'
+        inLanguage:
+          type: string
+        availableLanguage:
+          type: array
+          items:
+            type: string
+        educationalLevel:
+          oneOf:
+            - type: string
+            - $ref: '#/components/schemas/DefinedTerm'
+        learningResourceType:
+          oneOf:
+            - type: string
+            - $ref: '#/components/schemas/DefinedTerm'
+        educationalUse:
+          type: array
+          items:
+            oneOf:
+              - type: string
+              - $ref: '#/components/schemas/DefinedTerm'
+        teaches:
+          type: array
+          minItems: 1
+          items:
+            oneOf:
+              - type: string
+              - $ref: '#/components/schemas/DefinedTerm'
+        assesses:
+          type: array
+          items:
+            oneOf:
+              - type: string
+              - $ref: '#/components/schemas/DefinedTerm'
+        competencyRequired:
+          type: array
+          items:
+            type: string
+        coursePrerequisites:
+          type: array
+          items: {}
+        educationalCredentialAwarded: {}
+        occupationalCredentialAwarded: {}
+        numberOfCredits: {}
+        syllabusSections:
+          type: array
+          items:
+            $ref: '#/components/schemas/Syllabus'
+        hasCourseInstance:
+          type: array
+          items:
+            $ref: '#/components/schemas/CourseInstance'
+        about:
+          type: array
+          items: {}
+        keywords:
+          type: array
+          items:
+            type: string
+        isAccessibleForFree:
+          type: boolean
+        license:
+          type: string
+        creativeWorkStatus:
+          type: string
+          enum: [Draft, Published, Archived, Deprecated]
+        agennext:
+          type: object
+          required: [slug, status, visibility, schools, programs, tags, version]
+          properties:
+            slug:
+              type: string
+            status:
+              type: string
+              enum: [draft, active, archived, deprecated]
+            visibility:
+              type: string
+              enum: [public, private, enterprise]
+            schools:
+              type: array
+              items:
+                type: string
+            programs:
+              type: array
+              items:
+                type: string
+            tags:
+              type: array
+              items:
+                type: string
+            version:
+              type: string
