@@ -1,15 +1,6 @@
 import type { PatchPrimitive, Primitive, Relationship } from "./domain.js";
-import { PrimitiveSchema, RelationshipSchema } from "./domain.js";
-import type { PrimitiveListQuery, PrimitiveListResult } from "./repository.js";
-
-export interface PlatformRepository {
-  list(query?: PrimitiveListQuery): Promise<PrimitiveListResult> | PrimitiveListResult;
-  get(identifier: string): Promise<Primitive | undefined> | Primitive | undefined;
-  create(input: Primitive): Promise<Primitive> | Primitive;
-  patch(identifier: string, patch: PatchPrimitive): Promise<Primitive> | Primitive;
-  relate(input: Relationship): Promise<Relationship & { id: string }> | (Relationship & { id: string });
-  listRelationships(identifier?: string): Promise<Array<Relationship & { id: string }>> | Array<Relationship & { id: string }>;
-}
+import { PrimitiveSchema } from "./domain.js";
+import type { PlatformRepository, PrimitiveListQuery, PrimitiveListResult } from "./repository.js";
 
 export interface SurrealConfig {
   endpoint: string;
@@ -141,18 +132,17 @@ export class SurrealPrimitiveRepository implements PlatformRepository {
       status: input.status
     };
 
-    const rows = await this.client.query<Array<Record<string, unknown>>>(
+    await this.client.query<Array<Record<string, unknown>>>(
       `RELATE primitive:${fromId}->relationship:${edgeId}->primitive:${toId} CONTENT ${JSON.stringify(payload)} RETURN *;`
     );
 
-    const row = rows[0] ?? payload;
-    return RelationshipSchema.extend({ id: RelationshipSchema.shape.from.optional().transform(() => `relationship:${edgeId}`) }).parse({
+    return {
       ...input,
+      id: `relationship:${edgeId}`,
       source_kind: payload.source_kind,
       target_kind: payload.target_kind,
-      id: `relationship:${edgeId}`,
-      ...row
-    }) as Relationship & { id: string };
+      status: payload.status
+    };
   }
 
   async listRelationships(identifier?: string): Promise<Array<Relationship & { id: string }>> {
