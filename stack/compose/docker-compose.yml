@@ -1,0 +1,129 @@
+services:
+  caddy:
+    image: caddy:2.8-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - catalog-api
+      - credential-api
+      - swagger-ui
+      - moodle
+      - mahara
+      - mailpit
+
+  surrealdb:
+    image: surrealdb/surrealdb:latest
+    restart: unless-stopped
+    command: start --log info --user ${SURREAL_USER} --pass ${SURREAL_PASS} rocksdb:/data/academy.db
+    ports:
+      - "8000:8000"
+    volumes:
+      - surreal_data:/data
+
+  catalog-api:
+    image: ${CATALOG_IMAGE}
+    restart: unless-stopped
+    environment:
+      PORT: "4001"
+      HOST: "0.0.0.0"
+      AUDIT_SINK: console
+      SURREALDB_ENDPOINT: http://surrealdb:8000
+      SURREALDB_NAMESPACE: ${SURREAL_NS}
+      SURREALDB_DATABASE: ${SURREAL_DB}
+      SURREALDB_USERNAME: ${SURREAL_USER}
+      SURREALDB_PASSWORD: ${SURREAL_PASS}
+    depends_on:
+      - surrealdb
+
+  credential-api:
+    image: ${CREDENTIAL_IMAGE}
+    restart: unless-stopped
+    environment:
+      PORT: "4002"
+      HOST: "0.0.0.0"
+      SURREALDB_ENDPOINT: http://surrealdb:8000
+      SURREALDB_NAMESPACE: ${SURREAL_NS}
+      SURREALDB_DATABASE: ${SURREAL_DB}
+      SURREALDB_USERNAME: ${SURREAL_USER}
+      SURREALDB_PASSWORD: ${SURREAL_PASS}
+    depends_on:
+      - surrealdb
+
+  swagger-ui:
+    image: swaggerapi/swagger-ui:v5.17.14
+    restart: unless-stopped
+    environment:
+      URLS: >-
+        [
+          {"url":"/openapi/catalog.yaml","name":"Catalog API"},
+          {"url":"/openapi/credentials.yaml","name":"Credential API"}
+        ]
+      BASE_URL: /docs
+    volumes:
+      - ./openapi:/usr/share/nginx/html/openapi:ro
+
+  mariadb:
+    image: mariadb:11
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+      MARIADB_DATABASE: ${MOODLE_DB_NAME}
+      MARIADB_USER: ${MOODLE_DB_USER}
+      MARIADB_PASSWORD: ${MOODLE_DB_PASSWORD}
+    volumes:
+      - mariadb_data:/var/lib/mysql
+      - ./mariadb/init:/docker-entrypoint-initdb.d:ro
+
+  moodle:
+    image: bitnami/moodle:4.5
+    restart: unless-stopped
+    environment:
+      MOODLE_DATABASE_HOST: mariadb
+      MOODLE_DATABASE_PORT_NUMBER: "3306"
+      MOODLE_DATABASE_NAME: ${MOODLE_DB_NAME}
+      MOODLE_DATABASE_USER: ${MOODLE_DB_USER}
+      MOODLE_DATABASE_PASSWORD: ${MOODLE_DB_PASSWORD}
+      MOODLE_USERNAME: ${MOODLE_ADMIN_USER}
+      MOODLE_PASSWORD: ${MOODLE_ADMIN_PASSWORD}
+      MOODLE_EMAIL: ${MOODLE_ADMIN_EMAIL}
+      MOODLE_SITE_NAME: Agent Academy
+      ALLOW_EMPTY_PASSWORD: "no"
+    volumes:
+      - moodle_data:/bitnami/moodle
+      - moodledata_data:/bitnami/moodledata
+    depends_on:
+      - mariadb
+
+  mahara:
+    image: ghcr.io/mahara/mahara:latest
+    restart: unless-stopped
+    environment:
+      MAHARA_DB_HOST: mariadb
+      MAHARA_DB_NAME: ${MAHARA_DB_NAME}
+      MAHARA_DB_USER: ${MAHARA_DB_USER}
+      MAHARA_DB_PASSWORD: ${MAHARA_DB_PASSWORD}
+    volumes:
+      - mahara_data:/var/www/html
+    depends_on:
+      - mariadb
+
+  mailpit:
+    image: axllent/mailpit:latest
+    restart: unless-stopped
+    ports:
+      - "1025:1025"
+
+volumes:
+  caddy_data:
+  caddy_config:
+  surreal_data:
+  mariadb_data:
+  moodle_data:
+  moodledata_data:
+  mahara_data:
