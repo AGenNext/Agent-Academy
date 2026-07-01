@@ -1,0 +1,6 @@
+apiVersion: v2
+name: agent-academy
+version: 0.1.0
+appVersion: 0.1.0
+description: Kubernetes-native Agent Academy platform with SurrealDB as canonical datastore.
+type: application

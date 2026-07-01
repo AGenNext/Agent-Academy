@@ -1,0 +1,32 @@
+namespace: agent-academy
+
+platformApi:
+  image: ghcr.io/agennext/agent-academy-platform-api:latest
+  replicas: 2
+  port: 4000
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+surrealdb:
+  image: surrealdb/surrealdb:latest
+  storageSize: 10Gi
+  usernameSecretKey: SURREAL_USER
+  passwordSecretKey: SURREAL_PASS
+  namespace: agennext
+  database: academy
+
+service:
+  type: ClusterIP
+
+ingress:
+  enabled: false
+  host: academy.example.com
+
+observability:
+  prometheusScrape: true
+  otelExporterOtlpEndpoint: ""
