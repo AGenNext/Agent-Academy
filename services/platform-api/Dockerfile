@@ -15,4 +15,4 @@ COPY package.json package-lock.json* ./
 RUN if [ -f package-lock.json ]; then npm ci --omit=dev; else npm install --omit=dev; fi
 COPY --from=build /app/dist ./dist
 EXPOSE 4000
-CMD ["node", "dist/server.js"]
+CMD ["node", "dist/run-surreal.js"]
