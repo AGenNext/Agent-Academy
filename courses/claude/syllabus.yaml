@@ -1,0 +1,93 @@
+id: claude-as-a-course
+title: Claude as a Course
+subtitle: Building Enterprise AI Agents with Claude, Claude Code, MCP, Skills, Subagents, Hooks, and Governance
+provider: AGenNext
+level: intermediate-to-advanced
+duration:
+  fast_track: 8-10 hours
+  standard_track: 4 weeks
+  enterprise_track: 6 weeks
+audience:
+  - AI engineers
+  - platform engineers
+  - product managers
+  - security architects
+  - enterprise IT teams
+  - agent builders
+prerequisites:
+  - Basic Git and GitHub workflow
+  - Basic command-line usage
+  - Familiarity with APIs
+  - Familiarity with AI assistant workflows
+outcomes:
+  - Use Claude Code for repository-aware engineering workflows
+  - Design durable context with CLAUDE.md
+  - Build and consume MCP servers
+  - Package repeatable capabilities as Skills
+  - Compose Subagents safely
+  - Use Hooks for quality and policy gates
+  - Build Claude API applications with streaming and tool use
+  - Apply enterprise governance, audit, evaluation, and cost controls
+modules:
+  - id: 01
+    title: Claude Platform Foundations
+    duration: 45m
+    artifact: docs/claude-system-map.md
+    assessment: Explain Claude surfaces and governance boundaries
+  - id: 02
+    title: Claude Code
+    duration: 90m
+    artifact: docs/claude-code-change-plan.md
+    assessment: Produce a safe repository change plan
+  - id: 03
+    title: Context Engineering
+    duration: 90m
+    artifact: CLAUDE.md
+    assessment: Create repo context with commands, architecture, and safety rules
+  - id: 04
+    title: Model Context Protocol
+    duration: 120m
+    artifact: mcp/project-inventory-server/README.md
+    assessment: Build or specify a read-only MCP integration
+  - id: 05
+    title: Skills
+    duration: 90m
+    artifact: skills/production-readiness/SKILL.md
+    assessment: Package a reusable governed capability
+  - id: 06
+    title: Subagents
+    duration: 90m
+    artifact: agents/software-delivery-team.md
+    assessment: Define specialist agents with boundaries
+  - id: 07
+    title: Hooks
+    duration: 60m
+    artifact: hooks/code-change-policy.md
+    assessment: Define validation gates around agent actions
+  - id: 08
+    title: Claude API
+    duration: 150m
+    artifact: apps/claude-tool-assistant/README.md
+    assessment: Design an API-backed assistant with one safe tool
+  - id: 09
+    title: Enterprise Governance
+    duration: 120m
+    artifact: governance/claude-governance-matrix.md
+    assessment: Map identity, policy, audit, evaluation, and cost controls
+  - id: 10
+    title: Production Capstone
+    duration: 240m
+    artifact: capstone/README.md
+    assessment: Submit a working governed Claude workflow
+certification:
+  passing_score: 80
+  requires_capstone: true
+  requires_peer_review: true
+  requires_evidence: true
+principles:
+  - Capability before autonomy
+  - Tool boundaries are contracts
+  - Context must be explicit
+  - Action must produce evidence
+  - Human-at-gate for risky changes
+  - Governance belongs to the platform
