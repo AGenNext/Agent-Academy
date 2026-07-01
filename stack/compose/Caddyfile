@@ -1,0 +1,33 @@
+:80 {
+  encode gzip zstd
+
+  handle_path /api/catalog/* {
+    reverse_proxy catalog-api:4001
+  }
+
+  handle_path /api/credentials/* {
+    reverse_proxy credential-api:4002
+  }
+
+  handle_path /docs/* {
+    reverse_proxy swagger-ui:8080
+  }
+
+  handle_path /moodle/* {
+    reverse_proxy moodle:8080
+  }
+
+  handle_path /mahara/* {
+    reverse_proxy mahara:80
+  }
+
+  handle_path /mail/* {
+    reverse_proxy mailpit:8025
+  }
+
+  respond /health "Agent Academy MVP stack is running" 200
+
+  handle {
+    respond "Agent Academy MVP Stack\n\nRoutes:\n- /api/catalog/health\n- /api/credentials/health\n- /docs\n- /moodle\n- /mahara\n- /mail\n" 200
+  }
+}
