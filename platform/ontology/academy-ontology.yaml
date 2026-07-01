@@ -1,0 +1,95 @@
+apiVersion: academy.agennext.io/v1alpha1
+kind: AcademyOntology
+metadata:
+  name: agent-academy-canonical-ontology
+  version: 0.1.0
+spec:
+  releaseStatus: release-candidate
+  resourceBase:
+    fields:
+      - identifier
+      - kind
+      - name
+      - description
+      - version
+      - status
+      - owner
+      - tenantId
+      - workspaceId
+      - visibility
+      - language
+      - tags
+      - labels
+      - provenance
+      - trustScore
+      - effectiveFrom
+      - effectiveUntil
+      - createdAt
+      - updatedAt
+      - createdBy
+      - updatedBy
+  lifecycle:
+    - draft
+    - review
+    - approved
+    - published
+    - active
+    - deprecated
+    - archived
+    - revoked
+  layers:
+    foundation:
+      primitives: [Identity, Organization, Account, Profile, Workspace, Namespace, Tenant, Relationship, Event]
+    knowledge:
+      primitives: [Domain, Subject, Topic, Concept, KnowledgeUnit, Objective, Outcome, Taxonomy, Ontology, Vocabulary]
+    learning:
+      primitives: [Program, LearningPath, Course, CourseInstance, Module, Lesson, Activity, Lab, Assignment, Challenge, Assessment, Question, Rubric, Feedback, Completion, Enrollment, Transcript]
+    competency:
+      primitives: [Capability, Competency, Skill, SkillLevel, Proficiency, Experience, Tool, Technology, Framework, Standard]
+    career:
+      primitives: [JobFamily, JobProfile, Designation, Role, Responsibility, CareerPath, ExperienceLevel, Industry]
+    evidence:
+      primitives: [Artifact, Project, Portfolio, Repository, Publication, Research, Presentation, Certificate, Evidence, Review, Evaluation]
+    credential:
+      primitives: [Badge, Credential, MicroCredential, Certificate, License, Transcript, Wallet, Issuer, Holder, Verifier, CertifyingAuthority]
+    governance:
+      primitives: [Policy, Rule, Constraint, Approval, Decision, Audit, Compliance, Control, Risk, Exception]
+    platform:
+      primitives: [Provider, Runtime, Agent, Workflow, Connector, Integration, API, SDK, Plugin]
+    operations:
+      primitives: [Deployment, Environment, Cluster, Region, Service, Pipeline, Release, Observability, Metric, Log, Trace]
+    commerce:
+      primitives: [Catalog, Offering, Pricing, Subscription, Invoice, Payment, Grant, Scholarship, Marketplace]
+  relationships:
+    - owns
+    - belongsTo
+    - contains
+    - teaches
+    - requires
+    - uses
+    - demonstrates
+    - assesses
+    - proves
+    - issues
+    - verifies
+    - mapsTo
+    - alignedTo
+    - dependsOn
+    - derivedFrom
+    - produces
+    - earnedBy
+    - issuedBy
+    - storedIn
+    - qualifies
+    - authorizes
+    - accredits
+    - recognizes
+  standards:
+    schemaOrg: true
+    openBadges: true
+    verifiableCredentials: true
+    did: true
+    sfia: true
+    esco: true
+    onet: true
+    nice: true
