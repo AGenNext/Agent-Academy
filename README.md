@@ -1,22 +1,55 @@
-# Agent Courses
+# Agent Academy
 
-Structured learning curriculum for building AI agent systems on SurrealDB and the AGenNext Agent Platform.
+Agent Academy is the API-first learning and certification platform for enterprise agent engineering.
 
-## Who This Is For
+It is modeled as a university-grade platform, not as an LMS implementation.
 
-Engineers building agent systems who want to deeply understand:
-- SurrealDB as an agent runtime, not just a database
-- Schema.org JSON-LD as a knowledge graph data model
-- Hard rule enforcement at the database layer
-- Agent memory, trust, governance, and FinOps from first principles
-- Claude as a governed enterprise agent engineering surface
+Moodle, Mahara, Open edX, Udemy, mobile apps, enterprise portals, and partner portals are external clients. Agent Academy remains the system of record for academic structure, enrollments, learning paths, transcripts, evidence, certifications, labs, organizations, and audit events.
 
-## Prerequisites
+## Core Principle
 
-- SurrealDB running locally
-- Basic SQL/query language familiarity
-- Optional: Python or JavaScript for integration exercises
-- For Claude course: basic Git, GitHub, CLI, API, and AI assistant workflow familiarity
+```text
+Agent Academy is the system of record.
+Every external application is a client.
+```
+
+## What Agent Academy Owns
+
+- Institution model
+- Schools, departments, programs, and courses
+- Learning paths
+- Students, instructors, reviewers, mentors, and organizations
+- Enrollments and cohorts
+- Progress and transcripts
+- Assessments, rubrics, submissions, grades, and feedback
+- Certificates, badges, renewals, and public verification
+- Portfolio evidence index
+- Lab launches and workspace records
+- Marketplace listings
+- Analytics and audit events
+
+## External Clients
+
+| Client | Role |
+|---|---|
+| Moodle | LMS and learning surface |
+| Mahara | portfolio and evidence surface |
+| Open edX | future learning surface if needed |
+| Udemy | future distribution surface if needed |
+| Enterprise Portal | organization dashboards and compliance reporting |
+| Partner Portal | partner delivery and cohort management |
+| Mobile App | learner experience client |
+
+## Architecture Docs
+
+| Document | Purpose |
+|---|---|
+| [Platform Architecture](./architecture/README.md) | Agent Academy as system of record and external-client architecture |
+| [Domain Model](./architecture/domain-model.md) | university-grade canonical domain model |
+| [API Overview](./api/README.md) | API-first principles and API groups |
+| [API Resource Map](./api/resources.md) | first resource and endpoint map |
+| [External Integrations](./integrations/README.md) | Moodle and Mahara as direct API clients |
+| [MVP Roadmap](./roadmap/mvp.md) | first end-to-end learner journey |
 
 ## Curriculum
 
@@ -34,40 +67,36 @@ Engineers building agent systems who want to deeply understand:
 | [10](./courses/10-finops-billing) | FinOps & Cost Attribution | 1.5h | Advanced |
 | [Claude](./courses/claude) | Claude as a Course: Building Enterprise AI Agents | 8-10h / 4 weeks | Intermediate-Advanced |
 
-## Learning Path
+## MVP Journey
+
+The first release should prove this flow:
 
 ```text
-01 -> 02 -> 03          Core runtime and memory
-04 -> 05               Knowledge graph and twins
-06 -> 07               Rules and governance
-08 -> 09 -> 10          Trust, skills, and economics
-Claude                 Vendor track: Claude Code, MCP, Skills, Subagents, Hooks, API, Governance
+Student enrolls
+-> starts course in Moodle
+-> launches lab
+-> submits evidence
+-> receives assessment
+-> earns certificate
+-> portfolio is updated in Mahara
 ```
 
-## Vendor and Platform Tracks
+## Integration Rule
 
-The numbered courses teach AGenNext's runtime-first agent architecture. Vendor tracks teach how to use major AI platforms inside that governed architecture.
-
-| Track | Path | Purpose |
-|---|---|---|
-| Claude | [courses/claude](./courses/claude) | Learn Claude as an enterprise agent engineering surface |
-
-## Core Principles
-
-Every course reinforces these:
+For v1, integrate directly with Agent Academy APIs.
 
 ```text
-SurrealDB is the runtime: data and decisions at the same layer.
-Schema.org JSON-LD is the graph data model.
-The semantic web is the knowledge graph.
-Hard rules live in the DB schema, not in application code.
-Every agent ships with memory, analytics, billing, health, and trust by default.
-Claude accelerates engineering, but governance belongs to the platform.
+Moodle -> Agent Academy APIs
+Mahara -> Agent Academy APIs
+Agent Academy APIs -> AGenNext Platform
 ```
 
-## Connection to Agent-Platform
+No distribution layer. No middleware. No LMS abstraction layer until production needs prove it.
 
-Courses teach the exact patterns used in production:
-- `AGenNext/Agent-Platform` — the production platform
-- `AGenNext/Agent-Labs` — quick experiments and POCs
-- `AGenNext/Agent-Courses` — this repo, structured learning
+## Release Rule
+
+Build the API first, then integrate clients.
+
+```text
+Domain Model -> API Contract -> Service -> Client Integration
+```
