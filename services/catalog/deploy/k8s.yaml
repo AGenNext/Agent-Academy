@@ -10,8 +10,8 @@ metadata:
   namespace: agent-academy
 type: Opaque
 stringData:
-  SURREALDB_USERNAME: root
-  SURREALDB_PASSWORD: root
+  SURREALDB_USERNAME: "<set-at-deploy-time>"
+  SURREALDB_PASSWORD: "<set-at-deploy-time>"
 ---
 apiVersion: v1
 kind: ConfigMap
