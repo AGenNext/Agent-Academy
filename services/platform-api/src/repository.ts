@@ -15,7 +15,16 @@ export interface PrimitiveListResult {
   offset: number;
 }
 
-export class PrimitiveRepository {
+export interface PlatformRepository {
+  list(query?: PrimitiveListQuery): Promise<PrimitiveListResult> | PrimitiveListResult;
+  get(identifier: string): Promise<Primitive | undefined> | Primitive | undefined;
+  create(input: Primitive): Promise<Primitive> | Primitive;
+  patch(identifier: string, patch: PatchPrimitive): Promise<Primitive> | Primitive;
+  relate(input: Relationship): Promise<Relationship & { id: string }> | (Relationship & { id: string });
+  listRelationships(identifier?: string): Promise<Array<Relationship & { id: string }>> | Array<Relationship & { id: string }>;
+}
+
+export class PrimitiveRepository implements PlatformRepository {
   private readonly primitives = new Map<string, Primitive>();
   private readonly relationships: Array<Relationship & { id: string }> = [];
 
