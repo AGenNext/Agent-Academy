@@ -28,6 +28,46 @@ npm run dev
 
 The service starts on port `4001` by default.
 
+If no SurrealDB environment variables are present, the service uses in-memory seed data.
+
+## Run with SurrealDB
+
+Apply the schema first:
+
+```bash
+surreal sql \
+  --conn http://localhost:8000 \
+  --user <user> \
+  --pass <password> \
+  --ns agennext \
+  --db academy \
+  --file surreal/schema.surql
+```
+
+Optionally apply seed data:
+
+```bash
+surreal sql \
+  --conn http://localhost:8000 \
+  --user <user> \
+  --pass <password> \
+  --ns agennext \
+  --db academy \
+  --file surreal/seed.surql
+```
+
+Then set:
+
+```bash
+export SURREALDB_ENDPOINT=http://localhost:8000
+export SURREALDB_NAMESPACE=agennext
+export SURREALDB_DATABASE=academy
+export SURREALDB_USERNAME=<user>
+export SURREALDB_PASSWORD=<password>
+export AUDIT_SINK=console
+npm run dev
+```
+
 ## Example
 
 ```bash
@@ -128,6 +168,43 @@ Implemented core `Course` fields:
 
 The `agennext` object carries platform-specific operational metadata without breaking JSON-LD compatibility.
 
+## Persistence
+
+The service supports two repository modes:
+
+| Mode | Use |
+|---|---|
+| In-memory | local development and tests |
+| SurrealDB HTTP | platform runtime persistence |
+
+The runtime automatically selects SurrealDB when all `SURREALDB_*` environment variables are set.
+
+## Audit
+
+Set `AUDIT_SINK=console` to emit course audit events for:
+
+- `course.listed`
+- `course.read`
+- `course.created`
+- `course.updated`
+
+The next production step is to persist audit events to the Agent Academy Audit API or SurrealDB `audit_event` table.
+
+## Container
+
+```bash
+docker build -t agent-academy-catalog ./services/catalog
+docker run --env-file ./services/catalog/.env.example -p 4001:4001 agent-academy-catalog
+```
+
+## Kubernetes
+
+```bash
+kubectl apply -f services/catalog/deploy/k8s.yaml
+```
+
+The manifest expects SurrealDB to be reachable through the configured service endpoint.
+
 ## Tests
 
 ```bash
@@ -144,9 +221,8 @@ Tests cover:
 
 ## Production Next Steps
 
-- Replace in-memory repository with SurrealDB persistence.
 - Add authentication and scoped authorization.
-- Emit audit events for create and patch.
+- Persist audit events through the Audit API.
 - Add module and lesson endpoints.
 - Add course import from repo course folders.
 - Add Moodle read integration for course catalog.
