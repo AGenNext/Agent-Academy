@@ -13,8 +13,9 @@ permissions:
   packages: read
 
 env:
-  REGISTRY: ghcr.io
   PLATFORM_API_IMAGE: ghcr.io/agennext/agent-academy-platform-api
+  DEFAULT_DEPLOY_DIR: /opt/agent-academy
+  DEFAULT_SSH_PORT: "22"
 
 jobs:
   deploy:
@@ -25,36 +26,39 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Resolve deploy settings
+        id: settings
+        run: |
+          echo "ssh_port=${OVH_SSH_PORT:-$DEFAULT_SSH_PORT}" >> "$GITHUB_OUTPUT"
+          echo "deploy_dir=${OVH_DEPLOY_DIR:-$DEFAULT_DEPLOY_DIR}" >> "$GITHUB_OUTPUT"
+        env:
+          OVH_SSH_PORT: ${{ secrets.OVH_SSH_PORT }}
+          OVH_DEPLOY_DIR: ${{ vars.OVH_DEPLOY_DIR }}
+
       - name: Prepare SSH key
         run: |
           mkdir -p ~/.ssh
           printf '%s' "${{ secrets.OVH_SSH_PRIVATE_KEY }}" > ~/.ssh/ovh_key
           chmod 600 ~/.ssh/ovh_key
-          ssh-keyscan -H "${{ secrets.OVH_HOST }}" >> ~/.ssh/known_hosts
+          ssh-keyscan -p "${{ steps.settings.outputs.ssh_port }}" -H "${{ secrets.OVH_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Prepare remote directory
+        run: |
+          ssh -i ~/.ssh/ovh_key -p "${{ steps.settings.outputs.ssh_port }}" "${{ secrets.OVH_USER }}@${{ secrets.OVH_HOST }}" \
+            "sudo mkdir -p '${{ steps.settings.outputs.deploy_dir }}' && sudo chown -R ${{ secrets.OVH_USER }} '${{ steps.settings.outputs.deploy_dir }}'"
 
       - name: Upload deployment bundle
         run: |
           rsync -az --delete \
-            -e "ssh -i ~/.ssh/ovh_key -p ${{ secrets.OVH_SSH_PORT || 22 }}" \
+            -e "ssh -i ~/.ssh/ovh_key -p ${{ steps.settings.outputs.ssh_port }}" \
             platform services/platform-api \
-            "${{ secrets.OVH_USER }}@${{ secrets.OVH_HOST }}:${{ vars.OVH_DEPLOY_DIR || '/opt/agent-academy' }}/"
+            "${{ secrets.OVH_USER }}@${{ secrets.OVH_HOST }}:${{ steps.settings.outputs.deploy_dir }}/"
 
       - name: Deploy platform
         run: |
-          ssh -i ~/.ssh/ovh_key -p "${{ secrets.OVH_SSH_PORT || 22 }}" "${{ secrets.OVH_USER }}@${{ secrets.OVH_HOST }}" << 'EOF'
-          set -euo pipefail
-          cd "${OVH_DEPLOY_DIR:-/opt/agent-academy}"
-          export SURREAL_USER="${SURREAL_USER}"
-          export SURREAL_PASS="${SURREAL_PASS}"
-          export PLATFORM_API_IMAGE="${PLATFORM_API_IMAGE}:${IMAGE_TAG}"
-          chmod +x platform/scripts/*.sh
-          ./platform/scripts/bootstrap.sh
-          ./platform/scripts/init-surreal.sh
-          ./platform/scripts/smoke-test.sh
-          EOF
-        env:
-          OVH_DEPLOY_DIR: ${{ vars.OVH_DEPLOY_DIR || '/opt/agent-academy' }}
-          SURREAL_USER: ${{ secrets.SURREAL_USER }}
-          SURREAL_PASS: ${{ secrets.SURREAL_PASS }}
-          PLATFORM_API_IMAGE: ${{ env.PLATFORM_API_IMAGE }}
-          IMAGE_TAG: ${{ github.event.inputs.image_tag }}
+          ssh -i ~/.ssh/ovh_key -p "${{ steps.settings.outputs.ssh_port }}" "${{ secrets.OVH_USER }}@${{ secrets.OVH_HOST }}" \
+            "cd '${{ steps.settings.outputs.deploy_dir }}' && \
+             SURREAL_USER='${{ secrets.SURREAL_USER }}' \
+             SURREAL_PASS='${{ secrets.SURREAL_PASS }}' \
+             PLATFORM_API_IMAGE='${{ env.PLATFORM_API_IMAGE }}:${{ github.event.inputs.image_tag }}' \
+             bash platform/scripts/deploy-ovh.sh"
