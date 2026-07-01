@@ -1,0 +1,19 @@
+name: Ontology Release
+
+on:
+  pull_request:
+    paths:
+      - 'platform/ontology/**'
+      - 'platform/surreal/ontology-*.surql'
+      - 'platform/openapi/ontology-api.yaml'
+      - 'platform/scripts/check-ontology-release.sh'
+      - '.github/workflows/ontology-release.yml'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Validate ontology release assets
+        run: bash platform/scripts/check-ontology-release.sh
