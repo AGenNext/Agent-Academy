@@ -205,6 +205,8 @@ kubectl apply -f services/catalog/deploy/k8s.yaml
 
 The manifest expects SurrealDB to be reachable through the configured service endpoint.
 
+Before applying in a real environment, replace placeholder secret values in `services/catalog/deploy/k8s.yaml` or inject them through your secret manager.
+
 ## Tests
 
 ```bash
