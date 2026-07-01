@@ -1,0 +1,76 @@
+apiVersion: academy.agennext.io/v1alpha1
+kind: PrimitiveCatalog
+metadata:
+  name: agent-academy-primitives
+spec:
+  primitives:
+    - name: Identity
+      description: Person, agent, or organization identity.
+      schemaOrg: [Person, Organization]
+      owns: [did, uri, status, version]
+    - name: Account
+      description: External or internal participation account linked to an identity.
+      examples: [ORCID, IEEE, GitHub, LinkedIn, Moodle, Mahara, EnterpriseDirectory]
+      owns: [provider, externalId, profileUrl, verificationStatus, scopes]
+    - name: Organization
+      description: Academy, school, partner, employer, certifying authority, or provider.
+      schemaOrg: [Organization, EducationalOrganization]
+      owns: [roles, accreditation, trustProfile]
+    - name: Capability
+      description: Broad domain capability grouping related skills.
+      owns: [name, domain, outcomes]
+    - name: Skill
+      description: Measurable competency with proficiency, expertise, framework mappings, and evidence rules.
+      schemaOrg: [DefinedTerm, CategoryCode]
+      owns: [frameworks, proficiency, expertise, tools, technologies, levels, evidenceRules]
+    - name: Technology
+      description: Platform, tool, framework, protocol, runtime, language, library, standard, or service.
+      owns: [type, vendor, ecosystem, version]
+    - name: JobProfile
+      description: Role or designation mapped to skills, tools, technologies, experience, credentials, and responsibilities.
+      owns: [designation, role, seniority, requiredSkills, requiredTechnologies, responsibilities]
+    - name: LearningPath
+      description: Sequenced path from current state to target capability, skill, credential, or job profile.
+      owns: [target, steps, prerequisites, completionRules]
+    - name: Resource
+      description: Reusable learning or reference material.
+      schemaOrg: [CreativeWork, LearningResource, MediaObject, SoftwareSourceCode, Dataset]
+      owns: [contentType, url, license, language, version]
+    - name: Artifact
+      description: Work product created, versioned, reviewed, assessed, referenced, or credentialed.
+      schemaOrg: [CreativeWork, SoftwareSourceCode, Dataset, DigitalDocument]
+      owns: [type, source, contributors, provenance, dependencies]
+    - name: Evidence
+      description: Evaluation-ready proof derived from artifacts, experience, reviews, or observations.
+      owns: [subject, artifact, skillClaims, verificationLevel, reviewer]
+    - name: Assessment
+      description: Formal or informal process for evaluating evidence against rubrics and skill rules.
+      owns: [rubric, assessor, decision, score, feedback]
+    - name: Credential
+      description: Badge, certificate, verifiable credential, transcript, or skill claim issued from evidence.
+      owns: [issuer, subject, status, proof, credentialSchema, credentialStatus]
+    - name: Wallet
+      description: Holder-controlled surface for storing, presenting, and exporting credentials.
+      owns: [holderDid, deliveryMode, linkedCredentials]
+    - name: Relationship
+      description: Graph edge connecting primitives.
+      owns: [source, predicate, target, provenance, confidence]
+  canonicalPredicates:
+    - owns
+    - belongsTo
+    - teaches
+    - requires
+    - uses
+    - demonstrates
+    - assesses
+    - proves
+    - issues
+    - verifies
+    - mapsTo
+    - alignedTo
+    - dependsOn
+    - derivedFrom
+    - produces
+    - earnedBy
+    - issuedBy
+    - storedIn
