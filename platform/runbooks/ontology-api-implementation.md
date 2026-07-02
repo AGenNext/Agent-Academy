@@ -23,6 +23,19 @@ Start Platform API locally, then run:
 BASE_URL=http://127.0.0.1:4000 ./platform/scripts/smoke-test-ontology-api.sh
 ```
 
+## Kubernetes deployment
+
+Deploy on the configured Kubernetes host:
+
+```bash
+export SURREAL_USER='<from environment>'
+export SURREAL_PASS='<from environment>'
+export PLATFORM_API_IMAGE='ghcr.io/agennext/agent-academy-platform-api:latest'
+./platform/scripts/deploy-kubernetes.sh
+```
+
+The deployment script applies platform manifests, initializes SurrealDB, applies ontology migration when present, updates the Platform API image, waits for rollouts, and runs smoke tests.
+
 ## CI
 
 The Platform API workflow now runs tests before build.
@@ -35,3 +48,4 @@ The Platform API workflow now runs tests before build.
 - Profiles can be created.
 - Resource graph edges can be created and listed.
 - Route tests cover the end-to-end ontology API flow.
+- Kubernetes deployment script completes successfully.
