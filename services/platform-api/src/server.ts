@@ -3,10 +3,12 @@ import cors from "@fastify/cors";
 import { z } from "zod";
 import { PatchPrimitiveSchema, PrimitiveCatalog, PrimitiveSchema, RelationshipSchema } from "./domain.js";
 import { PrimitiveRepository } from "./repository.js";
+import { registerOntologyRoutes } from "./ontology-routes.js";
 
 export function buildServer(repository = new PrimitiveRepository()) {
   const app = Fastify({ logger: true });
   app.register(cors, { origin: true });
+  app.register(registerOntologyRoutes);
 
   app.get("/health", async () => ({ status: "ok", service: "agent-academy-platform-api" }));
   app.get("/ready", async () => ({ status: "ready", service: "agent-academy-platform-api" }));
